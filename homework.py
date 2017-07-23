@@ -176,17 +176,120 @@ def predict(network, x):
 # print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
 
 # 3.6.3 バッチ処理
-x, t = get_data()
-network = init_network()
+# x, t = get_data()
+# network = init_network()
+#
+# batch_size = 100
+# accuracy_cnt = 0
+#
+# for i in range(0, len(x), batch_size):
+#     x_batch = x[i:i+batch_size]
+#     y_batch = predict(network, x_batch)
+#     p = np.argmax(y_batch, axis=1)
+#
+#     accuracy_cnt += np.sum(p == t[i:i+batch_size])
 
-batch_size = 100
-accuracy_cnt = 0
+# print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
 
-for i in range(0, len(x), batch_size):
-    x_batch = x[i:i+batch_size]
-    y_batch = predict(network, x_batch)
-    p = np.argmax(y_batch, axis=1)
 
-    accuracy_cnt += np.sum(p == t[i:i+batch_size])
+# 4章 ニューラルネットワークの学習
+# 4.1 データから学習する
 
-print("Accuracy:" + str(float(accuracy_cnt) / len(x)))
+# 4.1.1 データ駆動
+
+# 4.1.2 訓練データとテストデータ
+
+# 4.2 損失関数
+
+# 4.2.1 2乗和誤差
+def mean_squared_error(y, t):
+    return 0.5 * np.sum((y-t)**2)
+
+# t = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+# # y = [0.1, 0.05, 0.6, 0.0, 0.05, 0.1, 0.0, 0.1, 0.0, 0.0]
+# y = [0.1, 0.05, 0.1, 0.0, 0.05, 0.1, 0.0, 0.6, 0.0, 0.0]
+# print(mean_squared_error(np.array(t), np.array(y)))
+
+# 4.2.2 交差エントロピー誤差
+# def cross_entropy_error(y, t):
+#     delta = 0.0000001
+#     return -np.sum(t * np.log(y + delta))
+
+# t = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+# # y = [0.1, 0.05, 0.6, 0.0, 0.05, 0.1, 0.0, 0.1, 0.0, 0.0]
+# y = [0.1, 0.05, 0.1, 0.0, 0.05, 0.1, 0.0, 0.6, 0.0, 0.0]
+# print(cross_entropy_error(np.array(y), np.array(t)))
+#
+# # 4.2.3 ミニバッチ学習
+# (x_train, t_train), (x_test, t_test) = load_mnist(normalize=True, one_hot_label=True)
+# print(x_train.shape)
+# print(t_train.shape)
+#
+# train_size = x_train.shape[0]
+# batch_size = 10
+# batch_mask = np.random.choice(train_size, batch_mask)
+# x_batch = x_train[batch_mask]
+# t_batch = t_train[batch_mask]
+
+# 4.2.4 [バッチ対応版]交差エントロピー誤差の実装
+# def cross_entropy_error(y, t):
+#     if y.ndim == 1:
+#         t = t.reshape(1, t.size)
+#         y = y.reshape(1, y.size)
+#
+#     batch_size = y.shape[0]
+#     return -np.sum(t * np.log(y)) / batch_size
+
+def cross_entropy_error(y, t):
+    if y.ndim == 1:
+        t = t.reshape(1, t.size)
+        y = y.reshape(1, y.size)
+
+    batch_size = y.shape[0]
+    return -np.sum(np.log(y[np.arange(batch_size), t])) / batch_size
+
+# 4.2.5 なぜ損失関数を設定するのか？
+
+# 4.3 数値微分
+# 4.3.1 微分
+def numerical_diff(f, x):
+    h = 0.0001
+    return (f(x+h) - f(x-h)) / (2*h)
+
+# 4.3.2 数値微分の例
+def function_1(x):
+    return 0.01*x**2 + 0.1*x
+
+# x = np.arange(0.0, 20.0, 0.1)
+# y = function_1(x)
+# plt.xlabel("x")
+# plt.ylabel("f(x)")
+# plt.plot(x, y)
+# plt.show()
+
+# 4.3.3 偏微分
+def function_2(x):
+    return x[0]**2 + x[1]**2
+
+# 4.4 勾配
+def numerical_gradient(f, x):
+    h = 0.0001
+    grad = np.zeros_like(x)
+
+    for idx in range(x.size):
+        tmp_val = x[idx]
+
+        x[idx] = tmp_val + h
+        fxh1 = f(x)
+
+        x[idx] = tmp_val - h
+        fxh2 = f(x)
+
+        grad[idx] = (fxh1 - fxh2) / (2*h)
+        x[idx] = tmp_val
+
+    return grad
+
+print(numerical_gradient(function_2, np.array([3.0, 4.0])))
+print(numerical_gradient(function_2, np.array([0.0, 2.0])))
+print(numerical_gradient(function_2, np.array([3.0, 0.0])))
