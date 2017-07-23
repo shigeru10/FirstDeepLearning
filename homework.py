@@ -290,6 +290,51 @@ def numerical_gradient(f, x):
 
     return grad
 
-print(numerical_gradient(function_2, np.array([3.0, 4.0])))
-print(numerical_gradient(function_2, np.array([0.0, 2.0])))
-print(numerical_gradient(function_2, np.array([3.0, 0.0])))
+# print(numerical_gradient(function_2, np.array([3.0, 4.0])))
+# print(numerical_gradient(function_2, np.array([0.0, 2.0])))
+# print(numerical_gradient(function_2, np.array([3.0, 0.0])))
+
+# 4.4.1 勾配法
+def gradient_descent(f, init_x, lr=0.01, step_num=100):
+    x = init_x
+
+    for i in range(step_num):
+        grad = numerical_gradient(f, x)
+        x -= lr * grad
+
+    return x
+
+# init_x = np.array([-3.0, 4.0])
+# print(gradient_descent(function_2, init_x=init_x, lr=0.1, step_num=100))
+
+# 4.4.2 ニューラルネットワークに対する勾配
+class simpleNet:
+    def __init__(self):
+        self.W = np.random.randn(2, 3)
+
+    def predict(self, x):
+        return np.dot(x, self.W)
+
+    def loss(self, x, t):
+        z = self.predict(x)
+        y = softmax(z)
+        loss = cross_entropy_error(y, t)
+
+        return loss
+
+net = simpleNet()
+print(net.W)
+
+x = np.array([0.6, 0.9])
+p = net.predict(x)
+print(p)
+print(np.argmax(p))
+t = np.array([0, 0, 1])
+print(net.loss(x, t))
+
+# def f(W):
+#     return net.loss(x, t)
+
+f = lambda w: net.loss(x, t)
+dW = numerical_gradient(f, net.W)
+print(dW)
